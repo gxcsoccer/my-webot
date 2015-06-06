@@ -1,12 +1,15 @@
 var fs = require('fs');
 var koa = require('koa');
+var path = require('path');
 var wechat = require('co-wechat');
 var WechatAPI = require('co-wechat-api');
 var config = require('./weixin.json');
 
+var accessTokenFile = path.join(__dirname, 'access_token.txt');
+
 var app = koa();
 var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
-  fs.readFile('access_token.txt', 'utf8', function (err, txt) {
+  fs.readFile(accessTokenFile, 'utf8', function (err, txt) {
     if (err) {
       return callback(err);
     }
@@ -15,7 +18,7 @@ var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
 }, function (token, callback) {
   // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
   // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
-  fs.writeFile('access_token.txt', JSON.stringify(token), callback);
+  fs.writeFile(accessTokenFile, JSON.stringify(token), callback);
 });
 
 app.use(wechat({
