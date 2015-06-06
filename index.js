@@ -12,7 +12,7 @@ var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
   fs.readFile(accessTokenFile, 'utf8', function (err, txt) {
     if (err) {
       if (err.code === 'ENOENT') {
-        return api.getAccessToken()(callback);
+        return api.getAccessToken(callback);
       }
       return callback(err);
     }
@@ -23,6 +23,7 @@ var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
   // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
   fs.writeFile(accessTokenFile, JSON.stringify(token), callback);
 });
+console.log(api.getUser().toString());
 
 app.use(wechat({
   token: config.token,
