@@ -11,6 +11,9 @@ var app = koa();
 var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
   fs.readFile(accessTokenFile, 'utf8', function (err, txt) {
     if (err) {
+      if (err.code === 'ENOENT') {
+        return api.getAccessToken()(callback);
+      }
       return callback(err);
     }
     callback(null, JSON.parse(txt));
