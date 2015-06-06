@@ -1,48 +1,43 @@
+var fs = require('fs');
 var koa = require('koa');
 var wechat = require('co-wechat');
+var WechatAPI = require('co-wechat-api');
+var config = require('./weixin.json');
 
 var app = koa();
+var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
+  fs.readFile('access_token.txt', 'utf8', function (err, txt) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, JSON.parse(txt));
+  });
+}, function (token, callback) {
+  // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
+  // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
+  fs.writeFile('access_token.txt', JSON.stringify(token), callback);
+});
 
 app.use(wechat({
-  token: 'gxcsoccer',
-  appid: 'wxa225e271c9821fb7',
-  encodingAESKey: 'bbp256iKEBvLy5dG4Q20sYEQvFIxqqq9e43fXCf148N'
+  token: config.token,
+  appid: config.appid,
+  encodingAESKey: config.encodingAESKey
 }).middleware(function* () {
   // 微信输入信息都在this.weixin上
   var message = this.weixin;
-  if (message.FromUserName === 'diaosi') {
-    // 回复屌丝(普通回复)
-    this.body = 'hehe';
-  } else if (message.FromUserName === 'text') {
-    //你也可以这样回复text类型的信息
-    this.body = {
-      content: 'text object',
-      type: 'text'
-    };
-  } else if (message.FromUserName === 'hehe') {
-    // 回复一段音乐
-    this.body = {
-      type: "music",
-      content: {
-        title: "来段音乐吧",
-        description: "一无所有",
-        musicUrl: "http://mp3.com/xx.mp3",
-        hqMusicUrl: "http://mp3.com/xx.mp3"
-      }
-    };
-  } else if (message.FromUserName === 'kf') {
-    // 转发到客服接口
+
+  if (message.Content && message.Content.toUpperCase() === 'KF') {
     this.body = {
       type: "customerService",
-      kfAccount: "test1@test"
+      kfAccount: "gxcsoccer"
     };
   } else {
-    // 回复高富帅(图文回复)
+    var user = yield api.getUser(message.FromUserName);
     this.body = [{
-      title: '你来我家接我吧',
-      description: '这是女神与高富帅之间的对话',
-      picurl: 'http://nodeapi.cloudfoundry.com/qrcode.jpg',
-      url: 'http://nodeapi.cloudfoundry.com/'
+      title: '成都娃娃',
+      description: '您好，' + user.nickname + '！ 欢迎来到成都娃娃的地盘',
+      picurl: 'https://s-media-cache-ak0.pinimg.com/originals/e5/fe/b3/e5feb38ffdaafe527ba5d963e0035b73.jpg',
+      url: 'http://gxcsoccer.github.io/'
     }];
   }
 }));
