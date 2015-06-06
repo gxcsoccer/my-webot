@@ -23,7 +23,6 @@ var api = new WechatAPI(config.appid, config.appsecret, function (callback) {
   // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
   fs.writeFile(accessTokenFile, JSON.stringify(token), callback);
 });
-console.log(api.getUser().toString());
 
 app.use(wechat({
   token: config.token,
@@ -39,10 +38,10 @@ app.use(wechat({
       kfAccount: "gxcsoccer"
     };
   } else {
-    var user = yield api.getUser(message.FromUserName);
+    // var user = yield api.getUser(message.FromUserName);
     this.body = [{
       title: '成都娃娃',
-      description: '您好，' + user.nickname + '！ 欢迎来到成都娃娃的地盘',
+      description: '您好！欢迎来到成都娃娃的地盘',
       picurl: 'https://s-media-cache-ak0.pinimg.com/originals/e5/fe/b3/e5feb38ffdaafe527ba5d963e0035b73.jpg',
       url: 'http://gxcsoccer.github.io/'
     }];
